@@ -23,7 +23,15 @@ app.get('/', async (req, res, next) => {
 
 app.listen(Config.port, async () => {
 	app.use('/', Routes);
-	await MongoAdapter.dbConnection.connect();
+
+
+	try {
+		await MongoAdapter.dbConnection.connect();
+	} catch (err) {
+		console.log(`failed to connect to mongodb ${err}`);
+	}
+
+
 
 	console.log(colors.green(`Twitter network api running: ${Config.port}`));
 });
