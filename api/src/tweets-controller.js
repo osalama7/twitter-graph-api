@@ -68,4 +68,12 @@ let CursorFindUserFriendsMap = async(db) => {
 	return friendsMap;
 };
 
-module.exports = { CursorfindFilteredTweets, CursorFindUserFollowersMap, CursorFindUserFriendsMap };
+let InsertNetworkACOAnalytics = async(db, analytics) => {
+	let AnalyticsCollection = await db.collection('analytics');
+		let res = AnalyticsCollection.insertMany([{analytics}]).catch(err => {
+			console.error(`failed to insert analytics`);
+		});
+	return res;
+};
+
+module.exports = { CursorfindFilteredTweets, CursorFindUserFollowersMap, CursorFindUserFriendsMap, InsertNetworkACOAnalytics };
