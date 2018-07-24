@@ -4,9 +4,8 @@ const TweetsController = require('../src/tweets-controller');
 const express = require('express');
 const Router = express.Router();
 const colors = require('colors');
-const GraphBuilder = require('./../../lib/src/friends-followers-graph-builder');
 const Config = require('./../../config/config');
-
+const TwitterGraph = require('./tweets-graph-class');
 const mongo = require('./../../lib/mongodb-adapter').dbConnection;
 
 Router.get('/tweets', async (req, res, next) => {
@@ -39,29 +38,28 @@ Router.get('/followmaps', async (req, res, next) => {
 
 
 Router.get('/network', async (req, res, next) => {
-	let followMaps = await TweetsController.CursorFindUserFollowersMap(mongo.db).catch((err) => {
+	let followMaps = await TweetsController.CursorFindUserFollowersMap(mongo.db)
+			.catch((err) => {
 		console.error(colors.red(`Failed to get maps${ err }`));
 		res.status(500).send(err);
 	});
 
-	let friendsMaps = await TweetsController.CursorFindUserFriendsMap(mongo.db).catch((err) => {
+	let friendsMaps = await TweetsController.CursorFindUserFriendsMap(mongo.db)
+			.catch((err) => {
 		console.error(colors.red(`Failed to get maps${ err }`));
 		res.status(500).send(err);
 	});
+	let TwitGraph = new TwitterGraph();
 
-	let network = await GraphBuilder.BuildGraph(followMaps, friendsMaps)
-			.catch(err => {
-				console.log(err);
+	let network = await TwitGraph.InitializeTwitterGraph(followMaps, friendsMaps)
+			.then(analyticsToPersist => {
+				TweetsController.InsertNetworkACOAnalytics(mongo.db, analyticsToPersist);
+			})
+			.catch( err => {
+			console.error(err);
 	});
-	let importanceArray = await GraphBuilder.CalculateNodeImprotanceForGraph(network);
-	console.log(`This network has ${network.vertexCount()} vertecies`);
-	console.log(`This network has ${network.edgeCount()} edges`);
-	network.stats = {
-		"vertex-count": network.vertexCount(),
-		"edge-count": network.edgeCount()
-	};
 
-	res.status(200).send(importanceArray);
+	res.status(200).send(network);
 	next();
 });
 
