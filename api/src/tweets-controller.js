@@ -1,79 +1,84 @@
 'use strict';
+const mongo = require('./../../lib/mongodb-adapter').dbConnection;
+const Config = require('./../../config/config');
 
-const EventEmitter = require('events');
+class TweetsDataController {
+
+	constructor() {
+	return this;
+	}
+
+	async CursorfindFilteredTweets () {
+
+		let FilteredTweetsFriends01Collection = await mongo.db.collection(Config.mongodb.collectionsObject.FilteredTweetsFriends01);
 
 
-let CursorfindFilteredTweets = async (db) => {
-	let FilteredTweetsFriends01Collection = await db.collection('FilteredTweetsFriends01');
-
-	let TweetsEmitter = new EventEmitter();
-	let tweets = [];
+		let tweets = [];
 		try {
-		let cursor = FilteredTweetsFriends01Collection.find();
-		let i = 0;
-		// console.log({cursor})
+			let cursor = FilteredTweetsFriends01Collection.find();
+			let i = 0;
 
+			while(await cursor.hasNext()) {
+				const doc = await cursor.next();
+				tweets.push(doc);
+			}
 
-
-		while(await cursor.hasNext()) {
-			const doc = await cursor.next();
-			TweetsEmitter.emit('tweet', doc);
-			tweets.push(doc);
+		} catch (err) {
+			console.error(err.stack);
 		}
+		console.log(tweets.length);
+		let uniqueIds = [];
+		tweets.map((tweet) => {
+			if (uniqueIds.indexOf(tweet.user_id) === -1 ) uniqueIds.push(tweet.user_id);
+		});
+		console.log(uniqueIds.length);
+		return tweets;
 
-	} catch (err) {
-		console.log(err.stack);
-	}
-	console.log(tweets.length);
-	let uniqueIds = [];
-	tweets.map((tweet) => {
-		if (uniqueIds.indexOf(tweet.user_id) === -1 ) uniqueIds.push(tweet.user_id);
-	});
-	console.log(uniqueIds.length);
-	return tweets;
-// TweetsEmitter.on('tweet')
-};
+	};
 
-let CursorFindUserFollowersMap = async(db) => {
-	let LevelAFollowersCollection = await db.collection('LevelAFollowers');
-	let followersMap = [];
-	const cursor = LevelAFollowersCollection.find();
-	try {
-		while(await cursor.hasNext()) {
-		const followMap = await cursor.next();
+	async CursorFindUserFollowersMap () {
 
-		followersMap.push(followMap);
+		let LevelAFollowersCollection = await mongo.db.collection(Config.mongodb.collectionsObject.LevelAFollowers);
+		let followersMap = [];
+
+		const cursor = LevelAFollowersCollection.find();
+		try {
+			while(await cursor.hasNext()) {
+				const followMap = await cursor.next();
+
+				followersMap.push(followMap);
+			}
+		} catch (err) {
+			console.error(err.stack);
 		}
-	} catch (err) {
-		console.log(err.stack);
-	}
-	console.log(followersMap.length);
-	return followersMap;
-};
+		console.log(followersMap.length);
+		return followersMap;
+	};
 
-let CursorFindUserFriendsMap = async(db) => {
-	let LevelAFriendsCollection = await db.collection('LevelAFriends');
-	let friendsMap = [];
-	const cursor = LevelAFriendsCollection.find();
-	try {
-		while(await cursor.hasNext()) {
-			const followMap = await cursor.next();
+	async CursorFindUserFriendsMap () {
+		let LevelAFriendsCollection = await mongo.db.collection(Config.mongodb.collectionsObject.LevelAFriends);
+		let friendsMap = [];
+		const cursor = LevelAFriendsCollection.find();
+		try {
+			while(await cursor.hasNext()) {
+				const followMap = await cursor.next();
 
-			friendsMap.push(followMap);
+				friendsMap.push(followMap);
+			}
+		} catch (err) {
+			console.error(err.stack);
 		}
-	} catch (err) {
-		console.log(err.stack);
-	}
-	console.log(friendsMap.length);
-	return friendsMap;
-};
-
-let InsertNetworkACOAnalytics = async(db, analytics) => {
-	let AnalyticsCollection = await db.collection('analytics');
+		console.log(friendsMap.length);
+		return friendsMap;
+	};
+	async InsertNetworkACOAnalytics (analytics) {
+		let AnalyticsCollection = await mongo.db.collection(Config.mongodb.collectionsObject.analytics);
 		let res = AnalyticsCollection.insertMany([{analytics}]).catch(err => {
 			console.error(`failed to insert analytics`);
 		});
-	return res;
-};
+		return res;
+	};
+}
 
-module.exports = { CursorfindFilteredTweets, CursorFindUserFollowersMap, CursorFindUserFriendsMap, InsertNetworkACOAnalytics };
+
+module.exports = TweetsDataController;
