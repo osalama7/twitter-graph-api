@@ -55,7 +55,7 @@ Router.get('/network', async (req, res, next) => {
 
 	tweetsDataController.InsertNetworkACOAnalytics(result.analytics);
 
-	res.status(200).send(result.twitterNetwork);
+	res.status(200).json( result.twitterNetwork );
 
 	next();
 });

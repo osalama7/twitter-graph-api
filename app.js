@@ -15,5 +15,6 @@ let middlewares = [
 
 app.use(middlewares);
 app.use('/', Routes);
+app.use(express.static('dist'));
 
 module.exports = app;
