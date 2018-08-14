@@ -8,58 +8,55 @@ const Config = require('./../../config/config');
 const TwitterGraph = require('./tweets-graph-class');
 const mongo = require('./../../lib/mongodb-adapter').dbConnection;
 
+const TweetsDataController = require('../src/tweets-controller');
+let tweetsDataController = new TweetsDataController();
+
 Router.get('/tweets', async (req, res, next) => {
-	let tweets = await TweetsController.CursorfindFilteredTweets(mongo.db).catch((err) => {
+
+	let tweets = await tweetsDataController.CursorfindFilteredTweets(tweetsDataController).catch((err) => {
 		console.error(colors.red(`Failed to get tweets${ err }`));
 		res.status(500).send(err);
 	});
 
-	// tweets.on('tweet', (doc) => {
-	// 	setImmediate(() => {
-	// 		console.dir(`something happend async now${doc}  ${Date.now()}`);
-	//
-	// 		next();
-	// 	})
-	// });
 
 	res.status(200).send({tweets});
 	next();
 });
 
 Router.get('/followmaps', async (req, res, next) => {
-	let followMaps = await TweetsController.CursorFindUserFollowersMap(mongo.db).catch((err) => {
-		console.error(colors.red(`Failed to get maps${ err }`));
-		res.status(500).send(err);
-	});
 
-	res.status(200).send(followMaps);
-	next();
+	 await tweetsDataController.CursorFindUserFollowersMap()
+			 .then( followMaps => {
+				res.status(200).send(followMaps);
+			 	next();
+	 			}).catch((err) => {
+				 console.error(colors.red(`Failed to get maps${ err }`));
+				 res.status(500).send(err);
+			 });
 });
 
 
 Router.get('/network', async (req, res, next) => {
-	let followMaps = await TweetsController.CursorFindUserFollowersMap(mongo.db)
+	let followMaps = await tweetsDataController.CursorFindUserFollowersMap()
 			.catch((err) => {
-		console.error(colors.red(`Failed to get maps${ err }`));
-		res.status(500).send(err);
+				console.error(colors.red(`Failed to get maps${ err }`));
+				res.status(500).send(err);
 	});
 
-	let friendsMaps = await TweetsController.CursorFindUserFriendsMap(mongo.db)
+	let friendsMaps = await tweetsDataController.CursorFindUserFriendsMap()
 			.catch((err) => {
-		console.error(colors.red(`Failed to get maps${ err }`));
-		res.status(500).send(err);
+				console.error(colors.red(`Failed to get maps${ err }`));
+				res.status(500).send(err);
 	});
+
 	let TwitGraph = new TwitterGraph();
 
-	let network = await TwitGraph.InitializeTwitterGraph(followMaps, friendsMaps)
-			.then(analyticsToPersist => {
-				TweetsController.InsertNetworkACOAnalytics(mongo.db, analyticsToPersist);
-			})
-			.catch( err => {
-			console.error(err);
-	});
+	let result = await TwitGraph.InitializeTwitterGraph(followMaps, friendsMaps);
 
-	res.status(200).send(network);
+	tweetsDataController.InsertNetworkACOAnalytics(result.analytics);
+
+	res.status(200).send(result.twitterNetwork);
+
 	next();
 });
 
