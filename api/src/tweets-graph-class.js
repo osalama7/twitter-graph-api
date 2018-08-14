@@ -3,7 +3,7 @@
 const Graph = require('graph.js/dist/graph.full.js');
 const EventEmitter = require('events');
 
-class TwttierGraph extends  Graph{
+class TwttierGraph extends Graph{
 
 	constructor () {
 		super();
@@ -11,15 +11,9 @@ class TwttierGraph extends  Graph{
 	}
 
 	async InitializeTwitterGraph (followersMap, friendsMap) {
-		let twitterGraph;
-		await this.BuildGraph(followersMap, friendsMap)
-				.then( network => {
-					this.CalculateNodeImportanceForGraph(network)
-						.then(result => {
-							twitterGraph = result;
-				})
-		});
-		return twitterGraph;
+	let twitterNetwork = await this.BuildGraph(followersMap, friendsMap);
+	let analytics = this.CalculateNodeImportanceForGraph(twitterNetwork);
+	return {twitterNetwork , analytics};
 	}
 
 	async BuildGraph (followersMap, friendsMap) {
