@@ -5,7 +5,7 @@ const express = require('express');
 const Router = express.Router();
 const colors = require('colors');
 const Config = require('./../../config/config');
-const TwitterGraph = require('./tweets-graph-class');
+const TwitterGraph = require('../../lib/src/tweets-graph-class');
 const mongo = require('./../../lib/mongodb-adapter').dbConnection;
 
 const TweetsDataController = require('../src/tweets-controller');
