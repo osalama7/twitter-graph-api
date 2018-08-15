@@ -12,14 +12,14 @@ const TweetsDataController = require('../src/tweets-controller');
 let tweetsDataController = new TweetsDataController();
 
 Router.get('/tweets', async (req, res, next) => {
-
-	let tweets = await tweetsDataController.CursorfindFilteredTweets(tweetsDataController).catch((err) => {
+	await tweetsDataController
+			.CursorfindFilteredTweets(tweetsDataController)
+			.then((tweets) => {
+				res.status(200).send({tweets});
+	}).catch((err) => {
 		console.error(colors.red(`Failed to get tweets${ err }`));
 		res.status(500).send(err);
 	});
-
-
-	res.status(200).send({tweets});
 	next();
 });
 

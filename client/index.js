@@ -1,6 +1,10 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Routes from './routes';
+import Tweets from './tweets';
 
-ReactDOM.render(<Routes/>, document.getElementById('root'));
+
+ReactDOM.render(
+		<Tweets />
+	,
+		document.getElementById('root')
+);
