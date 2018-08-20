@@ -47,11 +47,12 @@ const onMouseOutLink = function(source, target) {
 };
 
 
-export default class Tweets extends React.Component {
+export default class TwitterNetwork extends React.Component {
 	constructor(props) {
 		super(props);
 	}
 	render() {
+		console.log('loaded');
 		return (
 				<Graph
 						id="graph-id" // id is mandatory, if no id is defined rd3g will throw an error
