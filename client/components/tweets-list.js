@@ -24,13 +24,14 @@ class Tweets extends React.Component {
 	}
 	render() {
 		const tweets= this.props.tweets && this.props.tweets.tweets ? this.props.tweets.tweets.map((tweet)=>
-			<div >
-				<p className="" dangerouslySetInnerHTML={{__html: tweet.text}}></p>
+			<div>
+				<p className="tweet-title" dangerouslySetInnerHTML={{__html: tweet.text}}></p>
 			</div>
 
 		): <div><p>Tweets not loaded</p></div>;
 	return (
-			<div>
+			<div className="tweet-panel">
+				<p className="count-caption">Count:{tweets.length}</p>
 				{tweets}
 				</div>
 	);
