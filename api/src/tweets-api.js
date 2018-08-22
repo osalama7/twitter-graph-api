@@ -35,6 +35,18 @@ Router.get('/followmaps', async (req, res, next) => {
 			 });
 });
 
+Router.get('/tweets/interactions', async (req, res, next) => {
+
+	await tweetsDataController.GetTopTrendingHashTags()
+			.then( trends => {
+				res.status(200).send(trends);
+				next();
+			}).catch((err) => {
+				console.error(colors.red(`Failed to get maps${ err }`));
+				res.status(500).send(err);
+			});
+});
+
 
 Router.get('/network', async (req, res, next) => {
 	let followMaps = await tweetsDataController.CursorFindUserFollowersMap()
