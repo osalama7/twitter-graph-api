@@ -1,6 +1,7 @@
 'use strict';
 const mongo = require('./../../lib/mongodb-adapter').dbConnection;
 const Config = require('./../../config/config');
+const TweetsMapper = require('./../../lib/src/mappers/index');
 
 class TweetsDataController {
 
@@ -9,9 +10,7 @@ class TweetsDataController {
 	}
 
 	async CursorfindFilteredTweets () {
-
 		let FilteredTweetsFriends01Collection = await mongo.db.collection(Config.mongodb.collectionsObject.FilteredTweetsFriends01);
-
 
 		let tweets = [];
 		try {
@@ -22,19 +21,35 @@ class TweetsDataController {
 				const doc = await cursor.next();
 				tweets.push(doc);
 			}
-
 		} catch (err) {
 			console.error(err.stack);
 		}
-		console.log(tweets.length);
-		let uniqueIds = [];
-		tweets.map((tweet) => {
-			if (uniqueIds.indexOf(tweet.user_id) === -1 ) uniqueIds.push(tweet.user_id);
-		});
-		console.log(uniqueIds.length);
+
 		return tweets;
 
 	};
+
+	async GetTopTrendingHashTags () {
+
+		let FilteredTweetsFriends01Collection = await mongo.db.collection(Config.mongodb.collectionsObject.FilteredTweetsFriends01);
+		let tweetsWithInteractions = [];
+		try {
+			//query
+			let cursor = FilteredTweetsFriends01Collection
+					.find({ $where: "this.hashtag_entities.length > 0 " })
+					.project({ _id: 0, hashtag_entities: 1});
+			//cursor
+			while (await cursor.hasNext()) {
+				const doc = await cursor.next();
+				tweetsWithInteractions.push(doc.hashtag_entities);
+			}
+
+		} catch (error) {
+			console.error(error.stack);
+		}
+
+		return TweetsMapper.mapTopHashtags(tweetsWithInteractions).slice(0, 30);
+	}
 
 	async CursorFindUserFollowersMap () {
 
