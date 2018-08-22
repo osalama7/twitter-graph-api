@@ -2,16 +2,15 @@
 
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-	loadTweets
-} from './../redux/actions/actions'
+import { loadTweets } from './../redux/actions/actions'
+import Interactions from './interactions';
 
 const mapStateToProps = state => {
-
 	return {
 		tweets: state.tweets.tweets
 	}
 };
+
 
 class Tweets extends React.Component {
 
@@ -20,20 +19,28 @@ class Tweets extends React.Component {
 	}
 
 	componentWillMount() {
-		this.props.loadTweets()
+		this.props.loadTweets();
 	}
+
 	render() {
+
 		const tweets= this.props.tweets && this.props.tweets.tweets ? this.props.tweets.tweets.map((tweet)=>
 			<div>
-				<p className="tweet-title" dangerouslySetInnerHTML={{__html: tweet.text}}></p>
+				<aside className="tweet-username">{tweet.name}</aside>
+				<p className="tweet-title" >{tweet.text}</p>
 			</div>
 
 		): <div><p>Tweets not loaded</p></div>;
 	return (
-			<div className="tweet-panel">
-				<p className="count-caption">Count:{tweets.length}</p>
-				{tweets}
+			<div>
+				<div className="container">
+					<Interactions />
 				</div>
+				<div className="tweet-panel">
+					<p className="count-caption">Count: {tweets.length ? tweets.length : 0}</p>
+					{tweets}
+				</div>
+			</div>
 	);
 	}
 
